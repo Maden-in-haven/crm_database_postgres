@@ -16,6 +16,10 @@ BEGIN
     INSERT INTO admins (id, permissions)
     VALUES (new_user_id, p_permissions);
 
+    -- Логирование действия
+    INSERT INTO user_logs (user_id, action)
+    VALUES (new_user_id, 'Created admin user');
+
     RETURN new_user_id;
 END;
 $$ LANGUAGE plpgsql;
@@ -38,6 +42,10 @@ BEGIN
     -- Создание записи в таблице клиентов
     INSERT INTO clients (id, full_name, phone_number)
     VALUES (new_user_id, p_full_name, p_phone_number);
+
+    -- Логирование действия
+    INSERT INTO user_logs (user_id, action)
+    VALUES (new_user_id, 'Created client user');
 
     RETURN new_user_id;
 END;
@@ -62,6 +70,60 @@ BEGIN
     INSERT INTO managers (id, full_name, hire_date)
     VALUES (new_user_id, p_full_name, p_hire_date);
 
+    -- Логирование действия
+    INSERT INTO user_logs (user_id, action)
+    VALUES (new_user_id, 'Created manager user');
+
     RETURN new_user_id;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+-- Функция для логического удаления пользователя-администратора
+CREATE OR REPLACE FUNCTION delete_admin(
+    p_admin_id UUID
+) RETURNS VOID AS $$
+BEGIN
+    -- Обновление поля is_deleted для пользователя
+    UPDATE users
+    SET is_deleted = TRUE
+    WHERE id = p_admin_id;
+
+    -- Логирование действия
+    INSERT INTO user_logs (user_id, action)
+    VALUES (p_admin_id, 'Logically deleted admin user');
+END;
+$$ LANGUAGE plpgsql;
+
+-- Функция для логического удаления пользователя-менеджера
+CREATE OR REPLACE FUNCTION delete_manager(
+    p_manager_id UUID
+) RETURNS VOID AS $$
+BEGIN
+    -- Обновление поля is_deleted для пользователя
+    UPDATE users
+    SET is_deleted = TRUE
+    WHERE id = p_manager_id;
+
+    -- Логирование действия
+    INSERT INTO user_logs (user_id, action)
+    VALUES (p_manager_id, 'Logically deleted manager user');
+END;
+$$ LANGUAGE plpgsql;
+
+-- Функция для логического удаления пользователя-клиента
+CREATE OR REPLACE FUNCTION delete_client(
+    p_client_id UUID
+) RETURNS VOID AS $$
+BEGIN
+    -- Обновление поля is_deleted для пользователя
+    UPDATE users
+    SET is_deleted = TRUE
+    WHERE id = p_client_id;
+
+    -- Логирование действия
+    INSERT INTO user_logs (user_id, action)
+    VALUES (p_client_id, 'Logically deleted client user');
 END;
 $$ LANGUAGE plpgsql;
